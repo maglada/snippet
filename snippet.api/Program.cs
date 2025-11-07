@@ -56,10 +56,6 @@ if (app.Environment.IsDevelopment())
     // Development-specific middleware here
 }
 
-// Global exception handling
-app.UseExceptionHandler("/error");
-app.UseHsts();
-app.UseHttpsRedirection();
 
 app.UseCors();
 
