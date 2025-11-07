@@ -3,6 +3,17 @@ using snippet.api.Models;
 
 namespace snippet.api.Data;
 
+/// <summary>
+/// Database context class for managing code snippets in the application.
+/// This class serves as the main entry point for database interactions using Entity Framework Core.
+/// </summary>
+/// <remarks>
+/// Responsibilities:
+/// - Defines the database structure and relationships
+/// - Manages database connections and transactions
+/// - Provides DbSet properties for accessing snippet data
+/// - Configures entity relationships and constraints
+/// </remarks>
 public class SnippetContext : DbContext
 {
     public SnippetContext(DbContextOptions<SnippetContext> options) 

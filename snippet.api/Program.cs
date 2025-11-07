@@ -1,4 +1,9 @@
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using snippet.api.Data;
 using snippet.api.Services;
 
@@ -6,6 +11,10 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container
 builder.Services.AddControllers();
+
+// Configure logging
+builder.Logging.ClearProviders();
+builder.Logging.AddConsole();
 
 // Configure SQLite database
 builder.Services.AddDbContext<SnippetContext>(options =>
@@ -18,17 +27,8 @@ builder.Services.AddDbContext<SnippetContext>(options =>
 // Register services with Dependency Injection
 builder.Services.AddScoped<ISnippetService, SnippetService>();
 
-// Add Swagger for API documentation
+// Add API Explorer endpoints
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() 
-    { 
-        Title = "Snippet Gallery API", 
-        Version = "v1",
-        Description = "A simple API for managing code snippets"
-    });
-});
 
 // Add CORS for CLI/Web client access
 builder.Services.AddCors(options =>
@@ -53,9 +53,13 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    // Development-specific middleware here
 }
+
+// Global exception handling
+app.UseExceptionHandler("/error");
+app.UseHsts();
+app.UseHttpsRedirection();
 
 app.UseCors();
 
