@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using snippet.api.DTOs;
+using snippet.api.Models;
 using snippet.api.Services;
 
 namespace snippet.api.Controllers;
@@ -23,18 +24,8 @@ public class SnippetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<SnippetDto>> CreateSnippet([FromBody] CreateSnippetDto createDto)
     {
-        if (!ModelState.IsValid)
-        {
-            return BadRequest(ModelState);
-        }
-
-        var snippet = await _snippetService.CreateSnippetAsync(createDto);
-        
-        return CreatedAtAction(
-            nameof(GetSnippet), 
-            new { id = snippet.Id }, 
-            snippet
-        );
+        var SnippetDto = await _snippetService.CreateSnippetAsync(createDto);
+        return CreatedAtAction(nameof(GetSnippet), new { id = SnippetDto.Id }, SnippetDto);
     }
 
     /// <summary>
@@ -57,14 +48,17 @@ public class SnippetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<SnippetDto>> GetSnippet(Guid id)
     {
-        var snippet = await _snippetService.GetSnippetByIdAsync(id);
-        
-        if (snippet == null)
+        if (id == Guid.Empty)
         {
-            return NotFound(new { message = $"Snippet with ID {id} not found" });
+            return BadRequest("Invalid snippet ID.");
         }
 
-        return Ok(snippet);
+        var SnippetDto = await _snippetService.GetSnippetByIdAsync(id);
+        if (SnippetDto == null)
+        {
+            return NotFound();
+        }
+        return Ok(SnippetDto);
     }
 
     /// <summary>
@@ -78,19 +72,18 @@ public class SnippetsController : ControllerBase
         Guid id, 
         [FromBody] UpdateSnippetDto updateDto)
     {
-        if (!ModelState.IsValid)
+        if (id == Guid.Empty)
         {
-            return BadRequest(ModelState);
+            return BadRequest("Invalid snippet ID.");
         }
 
-        var snippet = await _snippetService.UpdateSnippetAsync(id, updateDto);
-        
-        if (snippet == null)
+        var updatedSnippet = await _snippetService.UpdateSnippetAsync(id, updateDto);
+        if (updatedSnippet == null)
         {
-            return NotFound(new { message = $"Snippet with ID {id} not found" });
+            return NotFound();
         }
 
-        return Ok(snippet);
+        return Ok(updatedSnippet);
     }
 
     /// <summary>
@@ -101,11 +94,15 @@ public class SnippetsController : ControllerBase
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<IActionResult> DeleteSnippet(Guid id)
     {
+        if (id == Guid.Empty)
+        {
+            return BadRequest("Invalid snippet ID.");
+        }
+
         var deleted = await _snippetService.DeleteSnippetAsync(id);
-        
         if (!deleted)
         {
-            return NotFound(new { message = $"Snippet with ID {id} not found" });
+            return NotFound();
         }
 
         return NoContent();
